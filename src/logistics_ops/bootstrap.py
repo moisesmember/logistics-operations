@@ -2,6 +2,8 @@ from logistics_ops.application.use_cases.sync_dataset_to_object_storage import (
     SyncDatasetToObjectStorage,
 )
 from logistics_ops.infrastructure.config.settings import AppSettings
+from logistics_ops.infrastructure.readers.hybrid_tabular_reader import HybridTabularReader
+from logistics_ops.infrastructure.readers.local_tabular_reader import LocalTabularReader
 from logistics_ops.infrastructure.readers.minio_tabular_reader import MinioTabularReader
 from logistics_ops.infrastructure.sources.kagglehub_dataset_source import (
     KaggleHubDatasetSource,
@@ -41,10 +43,27 @@ def build_sync_use_case(settings: AppSettings | None = None) -> SyncDatasetToObj
     )
 
 
-def build_tabular_reader(settings: AppSettings | None = None) -> MinioTabularReader:
+def build_minio_tabular_reader(settings: AppSettings | None = None) -> MinioTabularReader:
     resolved_settings = settings or build_settings()
     return MinioTabularReader(
         storage=build_storage(resolved_settings),
         bucket=resolved_settings.minio_bucket,
         dataset_prefix=resolved_settings.minio_dataset_prefix,
+    )
+
+
+def build_local_tabular_reader(settings: AppSettings | None = None) -> LocalTabularReader:
+    resolved_settings = settings or build_settings()
+    source = build_dataset_source(resolved_settings)
+    return LocalTabularReader(
+        dataset_root=source.get_dataset_root(),
+        dataset_prefix=resolved_settings.minio_dataset_prefix,
+    )
+
+
+def build_tabular_reader(settings: AppSettings | None = None) -> HybridTabularReader:
+    resolved_settings = settings or build_settings()
+    return HybridTabularReader(
+        primary_reader=build_minio_tabular_reader(resolved_settings),
+        fallback_reader=build_local_tabular_reader(resolved_settings),
     )

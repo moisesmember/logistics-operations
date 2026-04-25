@@ -17,7 +17,7 @@ class KaggleHubDatasetSource(DatasetSource):
         self._dataset_handle = dataset_handle
         self._cache_dir = cache_dir
 
-    def list_assets(self) -> list[DatasetAsset]:
+    def get_dataset_root(self) -> Path:
         logger.info(
             "Downloading or reusing Kaggle dataset '%s' into '%s'.",
             self._dataset_handle,
@@ -30,6 +30,10 @@ class KaggleHubDatasetSource(DatasetSource):
             )
         ).resolve()
         logger.info("Resolved Kaggle dataset root to '%s'.", dataset_root)
+        return dataset_root
+
+    def list_assets(self) -> list[DatasetAsset]:
+        dataset_root = self.get_dataset_root()
 
         assets: list[DatasetAsset] = []
         for file_path in sorted(path for path in dataset_root.rglob("*") if path.is_file()):

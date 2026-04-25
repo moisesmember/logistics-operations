@@ -230,6 +230,13 @@ De acordo com a página do dataset no Kaggle, os arquivos publicados incluem:
 
 ## Uso em notebooks Jupyter
 
+O `build_tabular_reader()` agora é híbrido:
+
+- tenta ler do MinIO primeiro;
+- se o MinIO não estiver ativo, não estiver acessível ou o objeto ainda não existir lá, faz fallback para a cópia local baixada pelo `kagglehub`.
+
+Isso significa que você consegue trabalhar no notebook mesmo sem subir o MinIO, desde que tenha autenticação no Kaggle e acesso para baixar/reusar o dataset no cache local.
+
 Depois de instalar o projeto com `pip install -e .`, você pode importar o leitor reutilizável em qualquer notebook:
 
 ```python
@@ -254,6 +261,47 @@ from logistics_ops.bootstrap import build_tabular_reader
 reader = build_tabular_reader()
 print(reader.list_dataset_objects())
 ```
+
+### Notebook sem MinIO
+
+Se você ainda não tiver subido o MinIO, pode usar exatamente o mesmo leitor:
+
+```python
+from logistics_ops.bootstrap import build_tabular_reader
+
+reader = build_tabular_reader()
+drivers = reader.read_csv_from_dataset("drivers.csv")
+print(drivers.head())
+```
+
+Nesse caso, o fluxo será:
+
+1. tentar MinIO;
+2. detectar indisponibilidade ou ausência do objeto;
+3. baixar ou reutilizar o dataset local via `kagglehub`;
+4. ler o arquivo diretamente do cache local.
+
+### Leitores explícitos
+
+Se quiser controlar o comportamento manualmente:
+
+```python
+from logistics_ops.bootstrap import (
+    build_local_tabular_reader,
+    build_minio_tabular_reader,
+    build_tabular_reader,
+)
+
+minio_reader = build_minio_tabular_reader()
+local_reader = build_local_tabular_reader()
+hybrid_reader = build_tabular_reader()
+```
+
+Use:
+
+- `build_minio_tabular_reader()` quando quiser falhar caso o MinIO não esteja disponível;
+- `build_local_tabular_reader()` quando quiser trabalhar só com o cache local do Kaggle;
+- `build_tabular_reader()` quando quiser o comportamento mais conveniente para notebooks.
 
 ## Exemplo usando diretamente a ideia sugerida pelo Kaggle
 
