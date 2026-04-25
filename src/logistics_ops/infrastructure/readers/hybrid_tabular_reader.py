@@ -4,6 +4,7 @@ from io import BytesIO, StringIO
 import pandas as pd
 from minio.error import S3Error
 
+from logistics_ops.exceptions import DestinationAccessError, DestinationUnavailableError
 from logistics_ops.infrastructure.readers.local_tabular_reader import LocalTabularReader
 from logistics_ops.infrastructure.readers.minio_tabular_reader import MinioTabularReader
 
@@ -67,4 +68,10 @@ class HybridTabularReader:
 
     @staticmethod
     def _fallback_exceptions() -> tuple[type[BaseException], ...]:
-        return (S3Error, OSError, ConnectionError)
+        return (
+            S3Error,
+            OSError,
+            ConnectionError,
+            DestinationUnavailableError,
+            DestinationAccessError,
+        )

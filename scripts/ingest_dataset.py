@@ -9,6 +9,7 @@ if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
 from logistics_ops.bootstrap import build_sync_use_case
+from logistics_ops.exceptions import LogisticsOperationsError
 
 
 def configure_logging() -> None:
@@ -20,7 +21,12 @@ def configure_logging() -> None:
 
 def main() -> None:
     configure_logging()
-    result = build_sync_use_case().execute()
+    try:
+        result = build_sync_use_case().execute()
+    except LogisticsOperationsError as exc:
+        logging.getLogger(__name__).error("Ingestion failed: %s", exc)
+        print(str(exc))
+        raise SystemExit(1) from exc
 
     print("Dataset synchronization completed.")
     print(f"Bucket: {result.bucket}")

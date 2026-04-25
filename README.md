@@ -210,6 +210,12 @@ Durante a execução, o script agora emite logs claros com:
 - objetos ignorados por já existirem;
 - resumo final da sincronização.
 
+Se o MinIO não estiver disponível durante a ingestão, o projeto agora responde com uma exceção amigável:
+
+```text
+Nao ha fonte de destino disponivel para a ingestao. Suba o MinIO e tente novamente.
+```
+
 ## API FastAPI
 
 O projeto agora expõe uma API HTTP para acionar a ingestão.
@@ -257,6 +263,8 @@ Resposta esperada:
   "skipped_files": 5
 }
 ```
+
+Se o MinIO estiver indisponível, a API responde com `503 Service Unavailable` e uma mensagem amigável no campo `detail`.
 
 ## Estrutura esperada do dataset
 
