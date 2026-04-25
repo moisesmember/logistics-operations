@@ -1,3 +1,4 @@
+import logging
 import sys
 from pathlib import Path
 
@@ -10,7 +11,15 @@ if str(SRC_DIR) not in sys.path:
 from logistics_ops.bootstrap import build_sync_use_case
 
 
+def configure_logging() -> None:
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
+    )
+
+
 def main() -> None:
+    configure_logging()
     result = build_sync_use_case().execute()
 
     print("Dataset synchronization completed.")

@@ -1,3 +1,4 @@
+import logging
 import mimetypes
 from pathlib import Path
 
@@ -5,6 +6,8 @@ import kagglehub
 
 from logistics_ops.domain.entities.dataset_asset import DatasetAsset
 from logistics_ops.domain.ports.dataset_source import DatasetSource
+
+logger = logging.getLogger(__name__)
 
 
 class KaggleHubDatasetSource(DatasetSource):
@@ -15,12 +18,18 @@ class KaggleHubDatasetSource(DatasetSource):
         self._cache_dir = cache_dir
 
     def list_assets(self) -> list[DatasetAsset]:
+        logger.info(
+            "Downloading or reusing Kaggle dataset '%s' into '%s'.",
+            self._dataset_handle,
+            self._cache_dir,
+        )
         dataset_root = Path(
             kagglehub.dataset_download(
                 self._dataset_handle,
                 output_dir=str(self._cache_dir),
             )
         ).resolve()
+        logger.info("Resolved Kaggle dataset root to '%s'.", dataset_root)
 
         assets: list[DatasetAsset] = []
         for file_path in sorted(path for path in dataset_root.rglob("*") if path.is_file()):
@@ -33,4 +42,5 @@ class KaggleHubDatasetSource(DatasetSource):
                     content_type=content_type,
                 )
             )
+        logger.info("Kaggle dataset source exposed %s files.", len(assets))
         return assets

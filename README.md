@@ -180,6 +180,7 @@ O arquivo [`requirements.txt`](./requirements.txt) inclui o necessário para:
 - acesso ao MinIO;
 - leitura tabular com `pandas`;
 - uso em notebooks com `jupyterlab` e `ipykernel`.
+- testes com `pytest`.
 
 ## Como executar a ingestão Kaggle -> MinIO
 
@@ -197,6 +198,15 @@ O fluxo executado é:
 4. verifica objeto por objeto;
 5. envia apenas os arquivos ausentes;
 6. retorna um resumo com enviados, ignorados e total.
+
+Durante a execução, o script agora emite logs claros com:
+
+- criação e validação de bucket;
+- download ou reaproveitamento do dataset do Kaggle;
+- descoberta dos arquivos;
+- upload de cada objeto novo;
+- objetos ignorados por já existirem;
+- resumo final da sincronização.
 
 ## Estrutura esperada do dataset
 
@@ -290,6 +300,51 @@ Validação rápida da base:
 
 ```powershell
 python -m compileall src scripts
+```
+
+## Testes
+
+### Testes unitários
+
+Executam sem depender do MinIO ativo:
+
+```powershell
+python -m pytest tests/unit
+```
+
+Cobertura adicionada:
+
+- caso de uso de sincronização;
+- leitura tabular reutilizável;
+- comportamento idempotente do upload;
+- normalização de caminhos para objetos no MinIO.
+
+### Testes de integração
+
+Os testes de integração usam um MinIO real e ficam desabilitados por padrão.
+
+1. Suba o MinIO:
+
+```powershell
+docker compose up -d
+```
+
+2. Ative a execução dos testes de integração:
+
+```powershell
+$env:RUN_INTEGRATION_TESTS="1"
+```
+
+3. Rode os testes:
+
+```powershell
+python -m pytest tests/integration
+```
+
+Se quiser rodar tudo de uma vez:
+
+```powershell
+python -m pytest
 ```
 
 ## Observações importantes
