@@ -15,6 +15,72 @@ O projeto foi preparado para trabalhar com o dataset `yogape/logistics-operation
 - Disponibilizar uma camada reutilizável para leitura dos arquivos em notebooks Jupyter e em outros códigos Python.
 - Manter a solução organizada em camadas inspiradas em Clean Architecture e princípios SOLID.
 
+## Como rodar o projeto
+
+### 1. Preparar o ambiente
+
+No Windows PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+C:\Users\User\AppData\Local\Programs\Python\Python314\python.exe -m venv .venv
+.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+pip install -e .
+```
+
+Configure também sua autenticação do Kaggle:
+
+- gere o token em `https://www.kaggle.com/settings`;
+- salve `kaggle.json` em `C:\Users\SEU_USUARIO\.kaggle\kaggle.json`.
+
+### 2. Subir o MinIO
+
+```powershell
+docker compose up -d
+```
+
+Serviços disponíveis:
+
+- API do MinIO: `http://localhost:9000`
+- Console do MinIO: `http://localhost:9001`
+
+### 3. Escolher como executar
+
+#### Opção A: rodar a ingestão por script
+
+```powershell
+python scripts/ingest_dataset.py
+```
+
+#### Opção B: rodar a API FastAPI
+
+```powershell
+uvicorn logistics_ops.api.app:app --reload
+```
+
+Depois chame a rota:
+
+```powershell
+Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:8000/api/v1/ingestions/logistics-dataset/sync"
+```
+
+#### Opção C: usar em notebook
+
+```python
+from logistics_ops.bootstrap import build_tabular_reader
+
+reader = build_tabular_reader()
+drivers = reader.read_csv_from_dataset("drivers.csv")
+print(drivers.head())
+```
+
+O leitor de notebook é híbrido:
+
+- usa MinIO quando disponível;
+- faz fallback para o cache local do Kaggle quando o MinIO não estiver ativo.
+
 ## Estrutura do projeto
 
 ```text
@@ -232,6 +298,15 @@ Por padrão, a API ficará disponível em:
 
 - Swagger UI: `http://127.0.0.1:8000/docs`
 - ReDoc: `http://127.0.0.1:8000/redoc`
+- OpenAPI JSON: `http://127.0.0.1:8000/api/v1/openapi.json`
+
+Boas práticas aplicadas no Swagger/OpenAPI:
+
+- metadados da API com título, resumo, descrição e licença;
+- organização por tags (`health` e `ingestion`);
+- `response_model` explícito para sucesso e erro;
+- descrições e exemplos nas respostas;
+- `operation_id`, `summary` e `description` nas rotas principais.
 
 ### Rotas disponíveis
 

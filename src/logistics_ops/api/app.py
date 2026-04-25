@@ -7,10 +7,37 @@ from logistics_ops.exceptions import DestinationAccessError, DestinationUnavaila
 
 
 def create_app() -> FastAPI:
+    tags_metadata = [
+        {
+            "name": "health",
+            "description": "Operações para monitoramento e verificação básica da API.",
+        },
+        {
+            "name": "ingestion",
+            "description": "Operações para sincronizar datasets do Kaggle no MinIO.",
+        },
+    ]
+
     app = FastAPI(
         title="Logistics Operations API",
+        summary="API para orquestrar ingestão de datasets logísticos no MinIO.",
         version="0.1.0",
-        description="HTTP API for orchestrating Kaggle to MinIO dataset ingestion.",
+        description=(
+            "API HTTP para orquestrar a ingestão do dataset de operações logísticas "
+            "do Kaggle para o MinIO, com documentação automática via Swagger e ReDoc."
+        ),
+        contact={
+            "name": "Logistics Operations",
+            "url": "https://www.kaggle.com/datasets/yogape/logistics-operations-database",
+        },
+        license_info={
+            "name": "MIT",
+            "url": "https://opensource.org/licenses/MIT",
+        },
+        openapi_tags=tags_metadata,
+        openapi_url="/api/v1/openapi.json",
+        docs_url="/docs",
+        redoc_url="/redoc",
     )
     app.include_router(health_router)
     app.include_router(ingestion_router)

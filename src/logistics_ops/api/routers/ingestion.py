@@ -3,6 +3,7 @@ import logging
 from fastapi import APIRouter, Depends, status
 
 from logistics_ops.api.dependencies import get_sync_use_case
+from logistics_ops.api.schemas.common import ErrorResponse
 from logistics_ops.api.schemas.ingestion import IngestionResponse
 from logistics_ops.application.use_cases.sync_dataset_to_object_storage import (
     SyncDatasetToObjectStorage,
@@ -17,6 +18,26 @@ router = APIRouter(prefix="/api/v1/ingestions", tags=["ingestion"])
     "/logistics-dataset/sync",
     response_model=IngestionResponse,
     status_code=status.HTTP_200_OK,
+    summary="Sincroniza o dataset logístico no MinIO",
+    description=(
+        "Dispara a ingestão do dataset `yogape/logistics-operations-database` "
+        "do Kaggle para o MinIO de forma idempotente."
+    ),
+    response_description="Resumo da sincronização executada.",
+    operation_id="sync_logistics_dataset",
+    responses={
+        200: {
+            "description": "Dataset sincronizado com sucesso.",
+        },
+        502: {
+            "model": ErrorResponse,
+            "description": "O destino respondeu, mas não pôde ser acessado corretamente.",
+        },
+        503: {
+            "model": ErrorResponse,
+            "description": "O MinIO não está disponível para receber a ingestão.",
+        },
+    },
 )
 def sync_logistics_dataset(
     use_case: SyncDatasetToObjectStorage = Depends(get_sync_use_case),

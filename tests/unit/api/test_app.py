@@ -31,6 +31,28 @@ def test_healthcheck_returns_ok() -> None:
     assert response.json() == {"status": "ok"}
 
 
+def test_docs_and_openapi_routes_are_exposed() -> None:
+    client = TestClient(create_app())
+
+    docs_response = client.get("/docs")
+    openapi_response = client.get("/api/v1/openapi.json")
+
+    assert docs_response.status_code == 200
+    assert openapi_response.status_code == 200
+    assert openapi_response.json()["info"]["title"] == "Logistics Operations API"
+    assert openapi_response.json()["openapi"] == "3.1.0"
+    assert openapi_response.json()["tags"] == [
+        {
+            "name": "health",
+            "description": "Operações para monitoramento e verificação básica da API.",
+        },
+        {
+            "name": "ingestion",
+            "description": "Operações para sincronizar datasets do Kaggle no MinIO.",
+        },
+    ]
+
+
 def test_sync_route_executes_ingestion_use_case() -> None:
     app = create_app()
     app.dependency_overrides[get_sync_use_case] = lambda: StubSyncUseCase()
