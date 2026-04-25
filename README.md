@@ -178,6 +178,8 @@ O arquivo [`requirements.txt`](./requirements.txt) inclui o necessário para:
 
 - ingestão com `kagglehub`;
 - acesso ao MinIO;
+- API HTTP com `FastAPI`;
+- servidor ASGI com `uvicorn`;
 - leitura tabular com `pandas`;
 - uso em notebooks com `jupyterlab` e `ipykernel`.
 - testes com `pytest`.
@@ -207,6 +209,54 @@ Durante a execução, o script agora emite logs claros com:
 - upload de cada objeto novo;
 - objetos ignorados por já existirem;
 - resumo final da sincronização.
+
+## API FastAPI
+
+O projeto agora expõe uma API HTTP para acionar a ingestão.
+
+### Subir a API
+
+Com a `venv` ativada:
+
+```powershell
+uvicorn logistics_ops.api.app:app --reload
+```
+
+Por padrão, a API ficará disponível em:
+
+- Swagger UI: `http://127.0.0.1:8000/docs`
+- ReDoc: `http://127.0.0.1:8000/redoc`
+
+### Rotas disponíveis
+
+- `GET /health`
+- `POST /api/v1/ingestions/logistics-dataset/sync`
+
+### Exemplo de chamada da ingestão
+
+PowerShell:
+
+```powershell
+Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:8000/api/v1/ingestions/logistics-dataset/sync"
+```
+
+`curl`:
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/v1/ingestions/logistics-dataset/sync
+```
+
+Resposta esperada:
+
+```json
+{
+  "bucket": "logistics-lake",
+  "prefix": "raw/kaggle/yogape/logistics-operations-database",
+  "total_files": 15,
+  "uploaded_files": 10,
+  "skipped_files": 5
+}
+```
 
 ## Estrutura esperada do dataset
 
@@ -362,6 +412,7 @@ python -m pytest tests/unit
 
 Cobertura adicionada:
 
+- healthcheck e rota HTTP de ingestão;
 - caso de uso de sincronização;
 - leitura tabular reutilizável;
 - comportamento idempotente do upload;
