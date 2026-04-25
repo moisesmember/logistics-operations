@@ -60,6 +60,12 @@ python scripts/ingest_dataset.py
 uvicorn logistics_ops.api.app:app --reload
 ```
 
+Endereços da documentação da API:
+
+- Swagger UI: `http://127.0.0.1:8000/docs`
+- ReDoc: `http://127.0.0.1:8000/redoc`
+- OpenAPI JSON: `http://127.0.0.1:8000/api/v1/openapi.json`
+
 Depois chame a rota:
 
 ```powershell
@@ -80,6 +86,28 @@ O leitor de notebook é híbrido:
 
 - usa MinIO quando disponível;
 - faz fallback para o cache local do Kaggle quando o MinIO não estiver ativo.
+
+#### Opção D: rodar o Jupyter Notebook
+
+Com a `.venv` ativada, registre o kernel:
+
+```powershell
+python -m ipykernel install --user --name logistics-operations --display-name "Python (logistics-operations)"
+```
+
+Depois suba o Jupyter:
+
+```powershell
+jupyter notebook
+```
+
+Se preferir o JupyterLab:
+
+```powershell
+jupyter lab
+```
+
+Ao abrir o notebook, selecione o kernel `Python (logistics-operations)`.
 
 ## Estrutura do projeto
 
