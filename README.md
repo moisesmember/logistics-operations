@@ -464,6 +464,57 @@ Use:
 - `build_local_tabular_reader()` quando quiser trabalhar só com o cache local do Kaggle;
 - `build_tabular_reader()` quando quiser o comportamento mais conveniente para notebooks.
 
+### Notebook mais limpo com helper
+
+Se o kernel do Jupyter estiver apontando para a `.venv` do projeto e você tiver executado:
+
+```powershell
+pip install -e .
+```
+
+você não precisa repetir o bloco de `sys.path` em cada notebook.
+
+Use o helper:
+
+```python
+from logistics_ops.notebooks import build_notebook_session
+
+nb = build_notebook_session()
+```
+
+Listar arquivos:
+
+```python
+dataset_objects = nb.list_dataset_objects()
+csv_file_names = nb.csv_file_names()
+```
+
+Gerar resumo dos CSVs:
+
+```python
+summary = nb.summarize_csvs()
+summary.head()
+```
+
+Carregar vários arquivos de uma vez:
+
+```python
+dataframes = nb.load_csvs(["drivers.csv", "trips.csv", "loads.csv"])
+
+for file_name, dataframe in dataframes.items():
+    print(f"{file_name} | shape={dataframe.shape}")
+    display(dataframe.head())
+```
+
+Esse helper já faz:
+
+- criação do leitor híbrido;
+- configuração básica do `pandas`;
+- supressão opcional de warnings;
+- listagem de objetos;
+- carregamento em lote dos CSVs;
+- resumo de linhas e colunas.
+
 ## Exemplo usando diretamente a ideia sugerida pelo Kaggle
 
 O Kaggle sugere o uso de `load_dataset` para carregar um arquivo específico em um `DataFrame`. Exemplo:
