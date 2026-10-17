@@ -1,5 +1,18 @@
 # Logistics Operations Lakehouse Bootstrap
 
+## Visão de portfólio
+
+**Problema:** reutilizar dados logísticos em análises sem repetir downloads, uploads e código de leitura a cada notebook.
+
+**Solução:** ingestão idempotente do Kaggle para o MinIO, API para sincronização e leitores reutilizáveis, com separação entre domínio, aplicação e infraestrutura.
+
+**Estágio:** base de engenharia de dados. A ingestão e a leitura documentadas não representam, por si só, um lakehouse completo com camadas silver/gold ou resultados operacionais validados.
+
+**Evidências:** [testes unitários](tests/unit) e [testes de integração](tests/integration). A resposta JSON de exemplo abaixo ilustra o formato da API; não é um benchmark.
+
+**Próxima evolução de negócio:** usar os dados para uma análise reproduzível de atrasos, utilização de veículos ou custos por viagem, publicando premissas e resultados medidos.
+
+
 Estrutura base para projetos de aprendizado de máquina e análise de dados com foco em arquitetura limpa, código reutilizável e ingestão idempotente de dados do Kaggle para o MinIO.
 
 O projeto foi preparado para trabalhar com o dataset `yogape/logistics-operations-database`:
@@ -23,7 +36,7 @@ No Windows PowerShell:
 
 ```powershell
 Copy-Item .env.example .env
-C:\Users\User\AppData\Local\Programs\Python\Python314\python.exe -m venv .venv
+python -m venv .venv
 .venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
 pip install -r requirements.txt
@@ -189,82 +202,11 @@ Essa convenção facilita:
 - Python 3.11+ (o ambiente local foi preparado para Python 3.14)
 - Credenciais de API do Kaggle
 
-## Subindo o MinIO com Docker Compose
+## Configuração e reprodução
 
-O arquivo [`docker-compose.yml`](./docker-compose.yml) sobe:
+As instruções de ambiente, autenticação e inicialização estão em [Como rodar o projeto](#como-rodar-o-projeto). Use [.env.example](.env.example) como referência das variáveis disponíveis.
 
-- MinIO API em `http://localhost:9000`
-- MinIO Console em `http://localhost:9001`
-
-Comando:
-
-```powershell
-docker compose up -d
-```
-
-Credenciais padrão definidas no `.env.example`:
-
-- usuário: `minioadmin`
-- senha: `minioadmin123`
-
-## Configuração de ambiente
-
-1. Copie o arquivo de exemplo:
-
-```powershell
-Copy-Item .env.example .env
-```
-
-2. Edite o `.env` com seus valores.
-
-Exemplo de variáveis:
-
-```env
-MINIO_ENDPOINT=localhost:9000
-MINIO_ACCESS_KEY=minioadmin
-MINIO_SECRET_KEY=minioadmin123
-MINIO_SECURE=false
-MINIO_BUCKET=logistics-lake
-MINIO_DATASET_PREFIX=raw/kaggle/yogape/logistics-operations-database
-
-KAGGLE_DATASET_HANDLE=yogape/logistics-operations-database
-KAGGLEHUB_CACHE=.cache/kagglehub
-```
-
-## Autenticação no Kaggle
-
-Segundo a documentação oficial do `kagglehub`, fora do ambiente do Kaggle você precisa autenticar para acessar datasets que exigem consentimento ou credenciais.
-
-As opções mais práticas são:
-
-1. Gerar o token em `https://www.kaggle.com/settings`.
-2. Salvar o arquivo `kaggle.json` em `C:\Users\SEU_USUARIO\.kaggle\kaggle.json`.
-
-Alternativamente, você pode autenticar por código:
-
-```python
-import kagglehub
-
-kagglehub.login()
-```
-
-## Criação da virtualenv
-
-No Windows PowerShell:
-
-```powershell
-C:\Users\User\AppData\Local\Programs\Python\Python314\python.exe -m venv .venv
-.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-pip install -r requirements.txt
-pip install -e .
-```
-
-Se quiser registrar a `venv` como kernel do Jupyter:
-
-```powershell
-python -m ipykernel install --user --name logistics-operations --display-name "Python (logistics-operations)"
-```
+As credenciais de exemplo do MinIO destinam-se ao ambiente local de desenvolvimento.
 
 ## Dependências
 
